@@ -1,14 +1,15 @@
-package ProjetRestaurant;
+package RMI;
 
-import RMI.ServiceRestaurant;
-
+import java.sql.Date;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.util.Scanner;
 
 public class Client {
 
-    private static final String SERVICE_NAME = "RestaurantService";
+    private static final String SERVICE_NAME = "restaurant";
 
     public static void main(String[] args) {
         ServiceRestaurant restaurantService = null;
@@ -38,8 +39,9 @@ public class Client {
             int numtab = scanner.nextInt();
             scanner.nextLine(); // Consume newline left-over
 
-            System.out.print("Date de reservation (YYYY-MM-DD HH:MM:SS): ");
-            String datres = scanner.nextLine();
+            System.out.print("Date de reservation (YYYY-MM-DD): ");
+            String dateStr = scanner.nextLine();
+            Date datres = Date.valueOf(dateStr);
 
             System.out.print("Nombre de personnes : ");
             int nbpers = scanner.nextInt();
@@ -54,14 +56,14 @@ public class Client {
             System.out.print("ton numéro de téléphone: ");
             String telephone = scanner.nextLine();
 
-            String reservationResult = restaurantService.reserverTable(idrest,numtab,datres,nom, prenom,telephone, nbpers);
+            String reservationResult = restaurantService.reserverTable(idrest, numtab, datres, nom, prenom, telephone, nbpers);
             System.out.println("Reservation Result (JSON):\n" + reservationResult);
             System.out.println("----------------------------------------------");
 
 
             System.out.println("\n--- Attempting a Duplicate Reservation (expected to fail) ---");
             String duplicateReservationResult = restaurantService.reserverTable(
-                    idrest, numtab, datres, "DuplicateGuest", "0000000000",2
+                    idrest, numtab, datres, "DuplicateGuest", "Duplicate", "0000000000", 2
             );
             System.out.println("Duplicate Reservation Result (JSON):\n" + duplicateReservationResult);
             System.out.println("----------------------------------------------");
@@ -74,6 +76,9 @@ public class Client {
         } catch (java.rmi.NotBoundException e) {
             System.err.println("Service not found in RMI Registry.");
             System.err.println("Please ensure the '" + SERVICE_NAME + "' is correctly bound by the server.");
+            System.err.println("Error details: " + e.getMessage());
+        } catch (IllegalArgumentException e) {
+            System.err.println("Format de date invalide. Utilisez le format YYYY-MM-DD.");
             System.err.println("Error details: " + e.getMessage());
         } catch (Exception e) {
             System.err.println("An unexpected error occurred during RMI client operation:");
