@@ -222,35 +222,79 @@ public class Restaurant implements ServiceRestaurant{
 
     @Override
     public String reserverTable(int indexRestaurant, int numTable, Date date, String nom, String prenom, String telephone, int nbPersonnes) throws RemoteException, RuntimeException {
-        String query = "insert into RESERVATION (numres, idrest, numtab, datres, nbpers, nom, prenom, telephone) " +
-                "values (reservation_seq.nextval, ?, ?, ?, ?, ?, ?, ?)";
-        try {
-            Connection con = Connexion.getInstance().getConnection();
+        int nextNumRes = 1;
+        String seqQuery = "SELECT MAX(numres) + 1 FROM RESERVATION";
+        Connection con = null;
 
+        try {
+            con = Connexion.getInstance().getConnection();
             if (con == null) {
                 throw new SQLException("Erreur de connexion - connexion nulle");
             }
 
-            PreparedStatement ps = con.prepareStatement(query);
-            ps.setInt(1, indexRestaurant);
-            ps.setInt(2, numTable);
-            ps.setDate(3, date);
-            ps.setInt(4, nbPersonnes);
-            ps.setString(5, nom);
-            ps.setString(6, prenom);
-            ps.setString(7, telephone);
+            boolean autoCommit = con.getAutoCommit();
+            con.setAutoCommit(false);
 
-            int rowsAffected = ps.executeUpdate();
+            try (PreparedStatement seqPs = con.prepareStatement(seqQuery);
+                 ResultSet rs = seqPs.executeQuery()) {
+                if (rs.next()) {
+                    Integer maxNumRes = rs.getInt(1);
+                    if (!rs.wasNull()) {
+                        nextNumRes = maxNumRes;
+                    }
+                }
+            }
 
-            if (rowsAffected > 0) {
-                con.commit();
-                return "{\"status\":\"success\", \"message\":\"Réservation réussie\"}";
-            } else {
-                con.rollback();
-                return "{\"status\":\"error\", \"message\":\"Réservation échouée\"}";
+            String insertQuery = "INSERT INTO RESERVATION (numres, idrest, numtab, datres, nbpers, nom, prenom, telephone) " +
+                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+
+            try (PreparedStatement ps = con.prepareStatement(insertQuery)) {
+                ps.setInt(1, nextNumRes);
+                ps.setInt(2, indexRestaurant);
+                ps.setInt(3, numTable);
+                ps.setDate(4, date);
+                ps.setInt(5, nbPersonnes);
+                ps.setString(6, nom);
+                ps.setString(7, prenom);
+                ps.setString(8, telephone);
+
+                int rowsAffected = ps.executeUpdate();
+
+                if (rowsAffected > 0) {
+                    con.commit();
+                    return "{\"status\":\"success\",\"message\":\"Réservation réussie\"}";
+                } else {
+                    con.rollback();
+                    return "{\"status\":\"error\",\"message\":\"Aucune ligne insérée\"}";
+                }
             }
         } catch (SQLException e) {
-            throw new RuntimeException("Erreur lors de la réservation de la table");
+            if (con != null) {
+                try {
+                    con.rollback();
+                } catch (SQLException ex) {
+                    System.err.println("Erreur lors du rollback: " + ex.getMessage());
+                }
+            }
+
+            String cleanMessage = e.getMessage()
+                    .replace("\\", "\\\\")
+                    .replace("\"", "\\\"")
+                    .replace("\n", "\\n")
+                    .replace("\r", "\\r")
+                    .replace("\t", "\\t")
+                    .replace("\b", "\\b")
+                    .replace("\f", "\\f");
+
+            return "{\"status\":\"error\",\"message\":\"" + cleanMessage + "\"}";
+        } finally {
+            if (con != null) {
+                try {
+                    con.setAutoCommit(true);
+                } catch (SQLException e) {
+                    System.err.println("Erreur lors de la restauration de l'autocommit: " + e.getMessage());
+                }
+            }
         }
     }
 }
