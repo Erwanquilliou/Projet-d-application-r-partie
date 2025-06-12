@@ -24,12 +24,14 @@ public class Connexion {
     }
 
     public void connect(String login, String mdp) throws LoginFail {
-        String url = "jdbc:oracle:thin:@charlemagne.iutnc.univ-lorraine.fr:1521:infodb";
+        String url = "jdbc:mysql://localhost:3306/Restaurants?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=UTC";
+
 
         try {
             this.con = DriverManager.getConnection(url, login, mdp);
             this.con.setAutoCommit(false);
         } catch (SQLException e) {
+            e.printStackTrace();
             throw new LoginFail("Erreur de connexion - login ou mot de passe incorrects");
         }
     }
