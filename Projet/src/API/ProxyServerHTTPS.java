@@ -2,29 +2,28 @@ package API;
 
 import RMI.ServiceRestaurant;
 import RMI.ServiceWaze;
-import com.sun.net.httpserver.HttpExchange;
-import com.sun.net.httpserver.HttpHandler;
-import com.sun.net.httpserver.HttpServer;
-
-import java.io.IOException;
-import java.io.OutputStream;
+import com.sun.net.httpserver.*;
+import javax.net.ssl.*;
+import java.io.*;
 import java.net.InetSocketAddress;
-import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
+import java.security.*;
 import java.sql.Date;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ProxyServer {
+public class ProxyServerHTTPS {
 
-    private static final int PORT = 8080;
+    private static final int PORT = 8443;
+    private static final String KEYSTORE_PATH = "keystore.jks";
+    private static final String KEYSTORE_PASSWORD = "42MXH4PX87eY0SV";
     private static ServiceRestaurant restaurantService;
     private static ServiceWaze wazeService;
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws Exception {
         try {
             Registry registry1 = LocateRegistry.getRegistry(args[0], 1099);
             restaurantService = (ServiceRestaurant) registry1.lookup("restaurant");
@@ -38,8 +37,35 @@ public class ProxyServer {
             e.printStackTrace();
         }
 
-        HttpServer server = HttpServer.create(new InetSocketAddress(PORT), 0);
+        char[] passphrase = KEYSTORE_PASSWORD.toCharArray();
+        KeyStore ks = KeyStore.getInstance("JKS");
+        try (FileInputStream fis = new FileInputStream(KEYSTORE_PATH)) {
+            ks.load(fis, passphrase);
+        }
 
+        KeyManagerFactory kmf = KeyManagerFactory.getInstance("SunX509");
+        kmf.init(ks, passphrase);
+
+        SSLContext sslContext = SSLContext.getInstance("TLS");
+        sslContext.init(kmf.getKeyManagers(), null, null);
+
+        HttpsServer server = HttpsServer.create(new InetSocketAddress(PORT), 0);
+        server.setHttpsConfigurator(new HttpsConfigurator(sslContext) {
+            public void configure(HttpsParameters params) {
+                try {
+                    SSLContext c = getSSLContext();
+                    SSLEngine engine = c.createSSLEngine();
+                    params.setNeedClientAuth(false);
+                    params.setCipherSuites(engine.getEnabledCipherSuites());
+                    params.setProtocols(engine.getEnabledProtocols());
+                    params.setSSLParameters(c.getDefaultSSLParameters());
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+            }
+        });
+
+        // Contexts API
         server.createContext("/api/waze-data", new WazeDataHandler());
         server.createContext("/api/restaurants", new RestaurantsHandler());
         server.createContext("/api/restaurant", new RestaurantHandler());
@@ -49,7 +75,7 @@ public class ProxyServer {
         server.setExecutor(null);
         server.start();
 
-        System.out.println("Serveur démarré sur le port " + PORT);
+        System.out.println("Serveur HTTPS démarré sur le port " + PORT);
     }
 
     static class WazeDataHandler implements HttpHandler {
@@ -199,7 +225,7 @@ public class ProxyServer {
                 int idRestaurant = Integer.parseInt(params.get("id"));
                 int numTable = Integer.parseInt(params.get("numTable"));
                 java.util.Date date = dateFormat.parse(params.get("date") + " " + params.get("time"));
-                Timestamp timestamp = new Timestamp(date.getTime());
+                java.sql.Timestamp timestamp = new Timestamp(date.getTime());
                 String nom = params.get("nom");
                 String prenom = params.get("prenom");
                 String telephone = params.get("telephone");
