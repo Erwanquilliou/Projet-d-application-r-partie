@@ -178,10 +178,12 @@ public class Restaurant implements ServiceRestaurant{
     }
 
     @Override
-    public String getTablesLibreRestaurant(int indexRestaurant, Date date) throws RemoteException, RuntimeException {
+    public String getTablesLibreRestaurant(int indexRestaurant, Timestamp date) throws RemoteException, RuntimeException {
         String query = "SELECT t.numtab, t.nbplace FROM TABL t " +
-                "WHERE t.idrest = ? AND t.numtab NOT IN " +
-                "(SELECT r.numtab FROM RESERVATION r WHERE r.idrest = ? AND r.datres = ?)";
+                "WHERE t.idrest = ? AND t.numtab NOT IN (" +
+                "  SELECT r.numtab FROM RESERVATION r " +
+                "  WHERE r.idrest = ? AND r.datres BETWEEN ? AND ?" +
+                ")";
 
         try {
             Connection con = Connexion.getInstance().getConnection();
@@ -190,10 +192,14 @@ public class Restaurant implements ServiceRestaurant{
                 throw new SQLException("Erreur de connexion - connexion nulle");
             }
 
+            Timestamp dateMoins3h = new Timestamp(date.getTime() - 3 * 3600 * 1000);
+            Timestamp datePlus3h = new Timestamp(date.getTime() + 3 * 3600 * 1000);
+
             PreparedStatement ps = con.prepareStatement(query);
             ps.setInt(1, indexRestaurant);
             ps.setInt(2, indexRestaurant);
-            ps.setDate(3, date);
+            ps.setTimestamp(3, dateMoins3h);
+            ps.setTimestamp(4, datePlus3h);
             ResultSet rs = ps.executeQuery();
 
             StringBuilder json = new StringBuilder("[");

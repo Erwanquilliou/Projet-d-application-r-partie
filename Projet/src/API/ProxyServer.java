@@ -149,10 +149,15 @@ public class ProxyServer {
             String query = exchange.getRequestURI().getQuery();
             String[] params = query.split("&");
             int idRestaurant = Integer.parseInt(params[0].split("=")[1]);
-            Date date = Date.valueOf(params[1].split("=")[1]);
+
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+            String dateStr = params[1].split("=")[1];
+            String timeStr = params[2].split("=")[1];
 
             String response;
             try {
+                java.util.Date parsedDate = dateFormat.parse(dateStr + " " + timeStr);
+                Timestamp date = new Timestamp(parsedDate.getTime());
                 response = restaurantService.getTablesLibreRestaurant(idRestaurant, date);
             } catch (Exception e) {
                 response = "{\"error\": \"" + e.getMessage() + "\"}";

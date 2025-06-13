@@ -221,7 +221,7 @@ function displayRestaurants(restaurants) {
                 <div class="restaurant-info">
                     <h4>${restaurant.nom}</h4>
                     <p><strong>Adresse:</strong> ${restaurant.adresse}</p>
-                    <button class="btn-reservation" onclick="showReservationForm(${restaurant.idrest})">Réserver une table</button>
+                    <button class="btn-reservation" onclick="showReservationStep1(${restaurant.idrest})">Réserver une table</button>
                 </div>
             `;
 
@@ -230,68 +230,103 @@ function displayRestaurants(restaurants) {
     });
 }
 
-function showReservationForm(restaurantId) {
+function showReservationStep1(restaurantId) {
     const today = new Date().toISOString().split('T')[0];
+    const formHtml = `
+        <div class="reservation-step1">
+            <h4>Choisissez la date et l'heure</h4>
+            <form id="form-step1" onsubmit="loadAvailableTables(event, ${restaurantId})">
+                <div class="form-group">
+                   <label for="date">Date:</label>
+                   <input type="date" id="date" name="date" value="${today}" required>
+                </div>
+                <div class="form-group">
+                    <label for="time">Heure:</label>
+                    <input type="time" id="time" name="time" required>
+                </div>
+                <button type="submit">Voir les tables disponibles</button>
+            </form>
+        </div>
+    `;
 
-    fetch(`${PROXY_URL}/api/tables-libres?id=${restaurantId}&date=${today}`)
+    const markerObj = restaurantMarkers.find(m => m.id === restaurantId);
+    if (markerObj) {
+        markerObj.marker.setPopupContent(formHtml);
+    }
+}
+
+function loadAvailableTables(event, restaurantId) {
+    event.preventDefault();
+    const form = event.target;
+    const date = form.date.value;
+    const time = form.time.value;
+
+    fetch(`${PROXY_URL}/api/tables-libres?id=${restaurantId}&date=${date}&time=${time}`)
         .then(response => response.json())
         .then(tables => {
-            let tableOptions = '';
-            if (tables.length === 0) {
-                tableOptions = '<option value="">Aucune table disponible</option>';
-            } else {
-                tables.forEach(table => {
-                    tableOptions += `<option value="${table.numtab}">Table ${table.numtab} (${table.nbplace} places)</option>`;
-                });
+            if (!Array.isArray(tables)) {
+                showReservationStep2(restaurantId, date, time, []);
+                console.error("Aucune table trouvée", tables);
+                return;
             }
-
-            const formHtml = `
-                <div class="reservation-form">
-                    <h4>Réservation</h4>
-                    <form id="form-reservation" onsubmit="submitReservation(event, ${restaurantId})">
-                        <div class="form-group">
-                            <label for="table">Table:</label>
-                            <select id="table" name="table" required>
-                                ${tableOptions}
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="date">Date:</label>
-                            <input type="date" id="date" name="date" value="${today}" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="time">Heure:</label>
-                            <input type="time" id="time" name="time" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="nbPersonnes">Nombre de personnes:</label>
-                            <input type="number" id="nbPersonnes" name="nbPersonnes" min="1" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="nom">Nom:</label>
-                            <input type="text" id="nom" name="nom" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="prenom">Prénom:</label>
-                            <input type="text" id="prenom" name="prenom" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="telephone">Téléphone:</label>
-                            <input type="tel" id="telephone" name="telephone" required>
-                        </div>
-                        <button type="submit" class="btn-submit">Réserver</button>
-                    </form>
-                </div>
-            `;
-
-            const markerObj = restaurantMarkers.find(m => m.id === restaurantId);
-            if (markerObj) {
-                markerObj.marker.setPopupContent(formHtml);
-            }
+            showReservationStep2(restaurantId, date, time, tables);
         })
         .catch(error => {
             console.error("Erreur lors de la récupération des tables:", error);
         });
+}
+
+function showReservationStep2(restaurantId, date, time, tables) {
+    let tableOptions = '';
+    if (tables.length === 0) {
+        tableOptions = '<option value="">Aucune table disponible</option>';
+    } else {
+        tables.forEach(table => {
+            tableOptions += `<option value="${table.numtab}">Table ${table.numtab} (${table.nbplace} places)</option>`;
+        });
+    }
+    const formHtml = `
+        <div class="reservation-step2">
+            <h4>Réservation</h4>
+            <form id="form-reservation" onsubmit="submitReservation(event, ${restaurantId}, '${date}', '${time}')">
+                <div class="form-group">
+                    <label for="table">Table:</label>
+                    <select id="table" name="table" required>
+                        ${tableOptions}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="date">Date:</label>
+                    <input type="date" id="date" name="date" value="${date}" readonly>
+                </div>
+                <div class="form-group">
+                    <label for="time">Heure:</label>
+                    <input type="time" id="time" name="time" value="${time}" readonly>
+                </div>
+                <div class="form-group">
+                    <label for="nbPersonnes">Nombre de personnes:</label>
+                    <input type="number" id="nbPersonnes" name="nbPersonnes" min="1" required>
+                </div>
+                <div class="form-group">
+                    <label for="nom">Nom:</label>
+                    <input type="text" id="nom" name="nom" required>
+                </div>
+                <div class="form-group">
+                    <label for="prenom">Prénom:</label>
+                    <input type="text" id="prenom" name="prenom" required>
+                </div>
+                <div class="form-group">
+                    <label for="telephone">Téléphone:</label>
+                    <input type="tel" id="telephone" name="telephone" required>
+                </div>
+                <button type="submit">Réserver</button>
+            </form>
+        </div>
+    `;
+    const markerObj = restaurantMarkers.find(m => m.id === restaurantId);
+    if (markerObj) {
+        markerObj.marker.setPopupContent(formHtml);
+    }
 }
 
 function submitReservation(event, restaurantId) {
@@ -306,7 +341,7 @@ function submitReservation(event, restaurantId) {
     const prenom = encodeURIComponent(form.prenom.value);
     const telephone = encodeURIComponent(form.telephone.value);
 
-    const url = `http://localhost:8080/api/reserver?id=${restaurantId}&numTable=${numTable}&date=${date}&time=${time}&nom=${nom}&prenom=${prenom}&telephone=${telephone}&nbPersonnes=${nbPersonnes}`;
+    const url = `${PROXY_URL}/api/reserver?id=${restaurantId}&numTable=${numTable}&date=${date}&time=${time}&nom=${nom}&prenom=${prenom}&telephone=${telephone}&nbPersonnes=${nbPersonnes}`;
 
     fetch(url)
         .then(response => {
@@ -334,7 +369,7 @@ function submitReservation(event, restaurantId) {
                                 <div class="restaurant-info">
                                     <h4>${restaurant.nom}</h4>
                                     <p><strong>Adresse:</strong> ${restaurant.adresse}</p>
-                                    <button class="btn-reservation" onclick="showReservationForm(${restaurant.idrest})">Réserver une table</button>
+                                    <button class="btn-reservation" onclick="showReservationStep1(${restaurant.idrest})">Réserver une table</button>
                                 </div>
                             `;
                             markerObj.marker.setPopupContent(popupContent);
