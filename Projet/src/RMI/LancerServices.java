@@ -13,7 +13,6 @@ import java.util.Properties;
 public class LancerServices {
 
     public static void main(String[] args) throws RemoteException {
-
         Properties props = new Properties();
         try (FileInputStream fis = new FileInputStream("conf.ini")) {
             props.load(fis);

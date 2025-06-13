@@ -37,7 +37,7 @@ CREATE TABLE RESERVATION (
                              numres INT PRIMARY KEY,
                              idrest INT NOT NULL,
                              numtab INT NOT NULL,
-                             datres DATE NOT NULL,
+                             datres TIMESTAMP NOT NULL,
                              nbpers INT NOT NULL,
                              nom VARCHAR(255),
                              prenom VARCHAR(255),
