@@ -1,6 +1,6 @@
 const map = L.map('map').setView([48.6921, 6.1844], 14);
 let restaurantMarkers = [];
-let PROXY_URL = 'http://localhost:8080'; //URL par défaut
+let PROXY_URL = 'https://localhost:8443'; //URL par défaut
 
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -15,12 +15,12 @@ function setProxyUrl() {
         hideProxyModal();
         loadAllData();
     } else {
-        alert('Veuillez saisir une URL valide (ex: http://localhost:8080)');
+        alert('Veuillez saisir une URL valide (ex: https://localhost:8443)');
     }
 }
 
 function useDefaultProxy() {
-    PROXY_URL = 'http://localhost:8080';
+    PROXY_URL = 'https://localhost:8443';
     hideProxyModal();
     loadAllData();
 }
