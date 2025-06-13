@@ -221,7 +221,7 @@ public class Restaurant implements ServiceRestaurant{
     }
 
     @Override
-    public String reserverTable(int indexRestaurant, int numTable, Date date, String nom, String prenom, String telephone, int nbPersonnes) throws RemoteException, RuntimeException {
+    public String reserverTable(int indexRestaurant, int numTable, Timestamp timestamp, String nom, String prenom, String telephone, int nbPersonnes) throws RemoteException, RuntimeException {
         int nextNumRes = 1;
         String seqQuery = "SELECT MAX(numres) + 1 FROM RESERVATION";
         Connection con = null;
@@ -252,7 +252,7 @@ public class Restaurant implements ServiceRestaurant{
                 ps.setInt(1, nextNumRes);
                 ps.setInt(2, indexRestaurant);
                 ps.setInt(3, numTable);
-                ps.setDate(4, date);
+                ps.setTimestamp(4, timestamp);
                 ps.setInt(5, nbPersonnes);
                 ps.setString(6, nom);
                 ps.setString(7, prenom);

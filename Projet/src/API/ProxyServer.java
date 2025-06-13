@@ -9,9 +9,12 @@ import com.sun.net.httpserver.HttpServer;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
+import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.sql.Date;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -191,9 +194,12 @@ public class ProxyServer {
                     }
                 }
 
+                SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+
                 int idRestaurant = Integer.parseInt(params.get("id"));
                 int numTable = Integer.parseInt(params.get("numTable"));
-                Date date = Date.valueOf(params.get("date"));
+                java.util.Date date = dateFormat.parse(params.get("date") + " " + params.get("time"));
+                Timestamp timestamp = new Timestamp(date.getTime());
                 String nom = params.get("nom");
                 String prenom = params.get("prenom");
                 String telephone = params.get("telephone");
@@ -201,7 +207,7 @@ public class ProxyServer {
 
                 try {
                     String response = restaurantService.reserverTable(
-                            idRestaurant, numTable, date, nom, prenom, telephone, nbPersonnes
+                            idRestaurant, numTable, timestamp, nom, prenom, telephone, nbPersonnes
                     );
 
                     try {

@@ -260,6 +260,10 @@ function showReservationForm(restaurantId) {
                             <input type="date" id="date" name="date" value="${today}" required>
                         </div>
                         <div class="form-group">
+                            <label for="time">Heure:</label>
+                            <input type="time" id="time" name="time" required>
+                        </div>
+                        <div class="form-group">
                             <label for="nbPersonnes">Nombre de personnes:</label>
                             <input type="number" id="nbPersonnes" name="nbPersonnes" min="1" required>
                         </div>
@@ -296,12 +300,13 @@ function submitReservation(event, restaurantId) {
     const form = event.target;
     const numTable = form.table.value;
     const date = form.date.value;
+    const time = form.time.value;
     const nbPersonnes = form.nbPersonnes.value;
     const nom = encodeURIComponent(form.nom.value);
     const prenom = encodeURIComponent(form.prenom.value);
     const telephone = encodeURIComponent(form.telephone.value);
 
-    const url = `${PROXY_URL}/api/reserver?id=${restaurantId}&numTable=${numTable}&date=${date}&nom=${nom}&prenom=${prenom}&telephone=${telephone}&nbPersonnes=${nbPersonnes}`;
+    const url = `http://localhost:8080/api/reserver?id=${restaurantId}&numTable=${numTable}&date=${date}&time=${time}&nom=${nom}&prenom=${prenom}&telephone=${telephone}&nbPersonnes=${nbPersonnes}`;
 
     fetch(url)
         .then(response => {
