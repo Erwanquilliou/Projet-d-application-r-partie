@@ -24,8 +24,7 @@ public class Connexion {
     }
 
     public void connect(String login, String mdp) throws LoginFail {
-        String url = "jdbc:mysql://localhost:3306/Restaurants?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=UTC";
-
+        String url = "jdbc:oracle:thin:@charlemagne.iutnc.univ-lorraine.fr:1521:infodb";
 
         try {
             this.con = DriverManager.getConnection(url, login, mdp);
