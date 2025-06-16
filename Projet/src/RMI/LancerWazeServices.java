@@ -15,8 +15,13 @@ public class LancerWazeServices {
     public static void main(String[] args) throws RemoteException {
 
         String proxyHost = "www-cache";
+        boolean useProxy;
         int proxyPort = 3128;
-        boolean useProxy = false;
+        if(args.length!= 0 && args[0].equals("true")) {
+            useProxy = true;
+        }else{
+            useProxy = false;
+        }
         //pour executer sur une machine de l'iut, on met use_proxy à true.
         //pour lier le .jar à l'execution dans un terminal:
         //java -cp json-20210307.jar Waze.java
