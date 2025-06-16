@@ -3,37 +3,70 @@ RAY Marcelin
 QUILLIOU Erwan  
 MOUGEL Antonin
 
+# URL webetu
+
+https://webetu.iutnc.univ-lorraine.fr/~ray13u/map/
+
 # Comment lancer
 
-il faut :  
-```
-chmod +x script.sh 
-```
-sinon les scripts ne se lancent pas.
+### Configuration
 
-Pour lancer l'application nous avons décidé de simplifier ça à l'aide de script, 3 scripts.
+Avant tout, il faut définir le fichier `conf.ini` à la racine du dossier `src` avec les paramètres suivants :
 
-Le premier script à lancer est lancerBDServiceRestaurant.sh, il va lancer le service RMI lié à la base de données.
+```
+login=Login de votre compte Oracle Charlemagne  
+mdp=Mot de passe de votre compte Oracle Charlemagne
+```
+
+### Droits d’exécution
+
+Assurez-vous de rendre les scripts exécutables avec la commande suivante :
+
+```
+chmod +x script.sh
+```
+
+(sinon les scripts ne se lanceront pas)
+
+---
+
+## Lancement de l'application
+
+Nous avons simplifié le lancement de l'application à l’aide de **trois scripts** :
+
+### 1. Lancer le service base de données (RMI)
+
+Le premier script à exécuter est `lancerBDServiceRestaurant.sh`. Il lance le service RMI lié à la base de données :
 
 ```
 ./lancerBDServiceRestaurant.sh
 ```
 
-Ensuite on peut lancer le script LancerServiceWaze.sh, il va lancer le service RMI qui récupère les accidents waze.
+### 2. Lancer le service Waze
+
+Ensuite, lancez le script `LancerServiceWaze.sh`. Il démarre le service RMI qui récupère les données d'accidents via l'API de Waze. Ce script prend un paramètre booléen qui indique si l'exécution se fait sur une machine de l’IUT. Si oui, le proxy de l’IUT doit être utilisé pour accéder à l’API.
 
 ```
-./LancerServiceWaze.sh
+./LancerServiceWaze.sh true   # ou false selon le contexte
 ```
 
-Enfin nous pouvons lancer le dernier script LancerProxy, qui va lancer le proxy liant les deux services RMI au site web, pour ce faire il a besoin des deux ip des deux machines qui propose les deux services lancés précédemment.
+### 3. Lancer le proxy
+
+Enfin, exécutez le script `LancerProxy.sh`, qui fait le lien entre les deux services RMI et le site web. Il nécessite les adresses IP des deux machines hébergeant respectivement les services précédents :
 
 ```
 ./LancerProxy.sh ipServiceRestaurant ipServiceWaze
 ```
 
-Une fois que tous les scripts sont lancés on peut se connecter au site et remplir l'url permettant d'accéder au proxy, donc en renseignant l'ip de la machine ainsi que le port 8443 du proxy.
+---
 
-Et voila le site est opérationnel !
+## Accès au site
+
+Une fois les scripts lancés, vous pouvez accéder au site web. Il faudra indiquer l’URL du proxy en précisant l’adresse IP de la machine et le port `8443`.
+
+---
+
+Le site est maintenant opérationnel !
 
 
 
