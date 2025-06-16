@@ -1,4 +1,9 @@
-# Comment lancer … partie erwan
+# Projet d'application répartie
+RAY Marcelin  
+QUILLIOU Erwan  
+MOUGEL Antonin
+
+# Comment lancer
 
 il faut :  
 ```
@@ -94,7 +99,7 @@ GET /api/tables-libres?id=<id_restaurant>&date=<date_reservation>
 
 ```
 GET /api/reserver?id=<id_restaurant>&numTable=<numero_table>&date=<date_reservation>&nom=<nom_client>&prenom=<prenom_client>&telephone=<telephone_client>&nbPersonnes=<nombre_personnes>
-​​```
+```
 
 **Description** : Permet de réserver une table dans un restaurant.
 
