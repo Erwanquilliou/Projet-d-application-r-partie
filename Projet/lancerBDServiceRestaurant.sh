@@ -18,9 +18,9 @@
 #echo "MySQL est prêt !"
 echo "compilation"
 
-javac -cp ojdbc17.jar -cp json-20131018.jar src/RMI/*.java
+javac -cp "ojdbc17.jar:json-20131018.jar" src/RMI/*.java
 cd "$(dirname "$0")/src" || exit 1
 echo "Lancer programme Restaurant"
-java  -cp ".;../ojdbc17.jar;../json-20131018.jar" RMI.LancerServices
+java  -cp ".:../ojdbc17.jar:../json-20131018.jar" RMI.LancerServices
 cd - > /dev/null
 
