@@ -11,8 +11,6 @@ chmod +x script.sh
 ```
 sinon les scripts ne se lancent pas.
 
-C’est pas précisé où mettre les .jar et où les récupérer, on va les ajouter dans le dépôt git je pense pour la simplicité
-
 Pour lancer l'application nous avons décidé de simplifier ça à l'aide de script, 3 scripts.
 
 Le premier script à lancer est lancerBDServiceRestaurant.sh, il va lancer le service RMI lié à la base de données.
@@ -41,6 +39,8 @@ Et voila le site est opérationnel !
 
 
 # Schéma final
+
+<img width="624" alt="Capture d’écran 2025-06-16 à 13 27 18" src="https://github.com/user-attachments/assets/bc687365-9e66-4252-9369-7b26bb369b0a" />
 
 
 # Présentation de l'API
